@@ -75,8 +75,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Remove any code block markers (like ```html or ```) from the recipe
             let recipeHtml = recipeData.recipe.trim();
             recipeHtml = recipeHtml.replace(/^```html\s*|^```|```$/gim, "").trim();
-            // Clear previous content and render the recipe HTML as formatted HTML
-            recipeResult.innerHTML = `<p>Detected ingredients: ${ingredients.join(", ")}</p>`;
+            // Only render the recipe HTML as formatted HTML (do not repeat detected ingredients)
+            recipeResult.innerHTML = "";
             const recipeDiv = document.createElement("div");
             recipeDiv.className = "recipe";
             recipeDiv.innerHTML = recipeHtml;
