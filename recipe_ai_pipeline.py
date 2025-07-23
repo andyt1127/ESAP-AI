@@ -1,17 +1,16 @@
 # Required installations:
 # pip install streamlit ultralytics torch torchvision openai pillow
 
-import streamlit as st
-from PIL import Image
 import openai
 import os
 import tempfile
+import base64
+import streamlit as st
 
 # --- STEP 0.5: GPT-4 Recipe Generation ---
 openai.api_key = os.getenv("OPEN_AI_KEY")
 
 # --- STEP 1: OpenAI Vision for Ingredient Detection ---
-import base64
 
 def get_ingredients_with_openai(image_path):
     """
@@ -23,8 +22,15 @@ def get_ingredients_with_openai(image_path):
         img_b64 = base64.b64encode(img_bytes).decode("utf-8")
 
     prompt = (
-        "You are a chef AI. List any visible food ingredient in this image. "
-        "Return only a comma-separated list of ingredient names, no extra text."
+        "You are an expert food recognition AI. Carefully examine the image and "
+        "list the most likely food items or ingredients you see (e.g., 'milk, eggs, butter, chocolate'). "
+        "If you see a food item like chocolate, bread, or cheese, state the food item itself (e.g., 'chocolate'), "
+        "and do NOT list the ingredients that make up that food (e.g., do NOT list 'cocoa, sugar, milk' for chocolate). "
+        "If you see packaging, use all visual clues, text, and context to infer what food or drink is inside. "
+        "Never say 'Unknown', 'I don't know', or anything vague. Always make your best, most specific guess, "
+        "even if you are uncertain. If you are unsure, use your knowledge of common foods and packaging to infer "
+        "the most probable answer. Ignore nutrition, vitamin, or packaging details (like 'Vitamin D', 'organic', 'best by'). "
+        "Return only a comma-separated list of food ingredient names, no extra text."
     )
 
     response = openai.ChatCompletion.create(
@@ -46,17 +52,19 @@ def get_ingredients_with_openai(image_path):
 def get_ingredients(image_path):
     return get_ingredients_with_openai(image_path)
 
+
 def generate_recipe(ingredients):
-    prompt = f"""
-    You are a chef AI. Create a unique, tasty recipe using the following ingredients:
-    {', '.join(ingredients)}
-    Include:
-    - Dish name
-    - Ingredients list (quantities optional)
-    - Step-by-step instructions
-    - Optional: prep/cook time
-    """
-    
+    prompt = (
+        "You are a world-class chef and creative storyteller. Using the following ingredients, invent a unique, mouth-watering recipe that will delight people from all around the globe: "
+        f"{', '.join(ingredients)}.\n"
+        "Use most or all of the provided ingredients in your recipe. "
+        "Give the dish a catchy, memorable name. Start with a short, fun story or interesting fact about the dish to draw people in. "
+        "Format the recipe as beautiful, modern HTML for a web page: use a large heading for the dish name. "
+        "Create clear, visually separated sections for the hook/story paragraph, ingredients, procedure, and chef's tips. Use headings (like h2 or h3) and spacing to separate each section. "
+        "For the ingredients, use a visually appealing list (but do NOT use bullet points or unordered lists). For the procedure, use a clear, easy-to-follow numbered list (do NOT center the elements). "
+        "Optionally include chef's tips, serving suggestions, or a fun twist. Make the recipe sound irresistible and globally inspired. Output only the HTML, no extra text."
+    )
+
     response = openai.ChatCompletion.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]

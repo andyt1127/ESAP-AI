@@ -59,26 +59,28 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // 2. Send ingredients to backend for recipe generation
+        // 2. Generate recipe
         recipeResult.textContent = 'Generating recipe...';
         feedback.textContent = '';
         try {
-            const params = new URLSearchParams();
-            params.append('ingredients', ingredients.join(','));
-            const response = await fetch('http://localhost:8000/generate-recipe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: params
+            const recipeForm = new FormData();
+            ingredients.forEach(i => recipeForm.append("ingredients", i));
+            const recipeRes = await fetch("http://localhost:8000/generate-recipe/", {
+                method: "POST",
+                body: recipeForm
             });
-            const data = await response.json();
-            if (data.recipe) {
-                recipeResult.textContent = data.recipe;
-            } else if (data.error) {
-                feedback.textContent = data.error;
-                recipeResult.textContent = '';
-            } else {
-                recipeResult.textContent = 'No recipe generated.';
-            }
+            if (!recipeRes.ok) throw new Error("Failed to generate recipe");
+            const recipeData = await recipeRes.json();
+            if (recipeData.error) throw new Error(recipeData.error);
+            // Remove any code block markers (like ```html or ```) from the recipe
+            let recipeHtml = recipeData.recipe.trim();
+            recipeHtml = recipeHtml.replace(/^```html\s*|^```|```$/gim, "").trim();
+            // Clear previous content and render the recipe HTML as formatted HTML
+            recipeResult.innerHTML = `<p>Detected ingredients: ${ingredients.join(", ")}</p>`;
+            const recipeDiv = document.createElement("div");
+            recipeDiv.className = "recipe";
+            recipeDiv.innerHTML = recipeHtml;
+            recipeResult.appendChild(recipeDiv);
         } catch (err) {
             recipeResult.textContent = '';
             feedback.textContent = err.message || 'Error generating recipe.';
