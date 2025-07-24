@@ -57,15 +57,15 @@ def generate_recipe(ingredients):
     prompt = (
         "You are a helpful home cook assistant. Using the following ingredients, create a practical, easy-to-follow recipe that anyone can make at home: "
         f"{', '.join(ingredients)}.\n"
-        "Use most or all of the provided ingredients in your recipe. "
+        "If there are two or more detected ingredients, you must use a combination of them in the recipe. Do not create a recipe based on only the last ingredient or a single ingredient when multiple are available. Always base the recipe on a mix of the provided ingredients. "
         "Give the dish a clear, simple name. Start with a short, friendly introduction or tip about the dish. "
         "Format the recipe as clean, modern HTML for a web page: use a large heading for the dish name. "
         "Create clear, visually separated sections for the introduction, ingredients, procedure, and a section called 'Suggested Groceries'. Use headings (like h2 or h3) and spacing to separate each section. "
         "For the ingredients, use a visually appealing list (but do NOT use bullet points or unordered lists). For the procedure, use a clear, easy-to-follow numbered list (do NOT center the elements). "
-        "In the 'Suggested Groceries' section, use the subtitle: Suggested groceries in order to make <b style=\"color:#e67e22\">Dish Name</b>, where the dish name is bolded and styled in a standout color. Only suggest groceries that can be found in a regular grocery store. "
+        "In the 'Suggested Groceries' section, use the subtitle: Suggested groceries in order to make <b style=\"color:#2196f3\">Dish Name</b>, where the dish name is bolded and styled in a standout color. Only suggest groceries that can be found in a regular grocery store. "
         "Display the name of the potential dish, and use an HTML <details> dropdown (with a <summary> tag) so the user can click to see more about the dish, including the recipe and instructions. Output only the HTML, no extra text."
     )
-
+    print("\n--- RECIPE GENERATION PROMPT ---\n" + prompt + "\n-------------------------------\n")
     response = openai.ChatCompletion.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]

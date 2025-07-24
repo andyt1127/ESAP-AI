@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
         feedback.textContent = '';
         try {
             const recipeForm = new FormData();
-            ingredients.forEach(i => recipeForm.append("ingredients", i));
+            recipeForm.append("ingredients", ingredients.join(", "));
             const recipeRes = await fetch("http://localhost:8000/generate-recipe/", {
                 method: "POST",
                 body: recipeForm
